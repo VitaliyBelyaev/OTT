@@ -8,6 +8,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import ru.belyaev.vitaliy.ott.R
 import ru.belyaev.vitaliy.ott.entity.Flight
+import ru.belyaev.vitaliy.ott.entity.Hotel
 import ru.belyaev.vitaliy.ott.entity.Order
 import ru.belyaev.vitaliy.ott.entity.ToursData
 import ru.belyaev.vitaliy.ott.entity.response.CompaniesResponse
@@ -18,10 +19,17 @@ import ru.belyaev.vitaliy.ott.network.NetworkModule
 @InjectViewState
 class MainPresenter : MvpPresenter<MainView>() {
 
-    var toursData = ToursData()
+    var allToursData = ToursData()
+    var filteredToursData = ToursData()
+    var filterCompanyId = -1
     lateinit var context: Context
 
     fun onHotelClick(hotelId: Int) {
+        val toursData = if (filterCompanyId != -1) {
+            filteredToursData
+        } else {
+            allToursData
+        }
 
         val hotel = toursData.hotels.find { it.id == hotelId }!!
         val flights = mutableListOf<Flight>()
@@ -44,8 +52,8 @@ class MainPresenter : MvpPresenter<MainView>() {
     }
 
     fun onFlightClick(hotelId: Int, flightId: Int) {
-        val hotel = toursData.hotels.find { it.id == hotelId }
-        val flight = toursData.flights.find { it.id == flightId }
+        val hotel = allToursData.hotels.find { it.id == hotelId }
+        val flight = allToursData.flights.find { it.id == flightId }
 
         val message = context.getString(R.string.selection_message, hotel!!.name, hotel.price + flight!!.price)
         viewState.showFlightsDialog(false, null)
@@ -53,28 +61,35 @@ class MainPresenter : MvpPresenter<MainView>() {
     }
 
     fun onCompanyFilterSelect(companyId: Int) {
+        filterCompanyId = companyId
 
-        val companyFlights = toursData.flights.filter { it.companyId == companyId }
-        val filteredHotels = toursData.hotels.filter { hotel ->
+        val companyFlights = allToursData.flights.filter { it.companyId == companyId }
+
+        val clonedHotels = mutableListOf<Hotel>()
+        for (oHotel in allToursData.hotels) {
+            clonedHotels.add(oHotel.copy())
+        }
+
+        val fHotels = clonedHotels.filter { hotel ->
             hotel.flights.any { it in companyFlights.map { it.id } }
         }
 
-        for (hotel in filteredHotels) {
+        for (hotel in fHotels) {
             hotel.flights = hotel.flights.filter { it in companyFlights.map { flight -> flight.id } }
         }
 
-        val newToursData = ToursData().apply {
-            hotels = filteredHotels
-            flights = toursData.flights
-            companies = toursData.companies
+        filteredToursData.apply {
+            hotels = fHotels
+            flights = allToursData.flights
+            companies = allToursData.companies
         }
 
         viewState.showFilterDialog(false, null)
-        viewState.showTours(true, newToursData)
+        viewState.showTours(true, filteredToursData)
     }
 
     fun onFilterMenuItemClick() {
-        viewState.showFilterDialog(true, toursData.companies)
+        viewState.showFilterDialog(true, allToursData.companies)
     }
 
     fun onNothingToFilter() {
@@ -103,7 +118,7 @@ class MainPresenter : MvpPresenter<MainView>() {
                     return
                 }
 
-                toursData.hotels = response.body()!!.hotels
+                allToursData.hotels = response.body()!!.hotels
 
                 fetchFlights()
             }
@@ -122,7 +137,7 @@ class MainPresenter : MvpPresenter<MainView>() {
                     return
                 }
 
-                toursData.flights = response.body()!!.flights
+                allToursData.flights = response.body()!!.flights
 
                 fetchCompanies()
             }
@@ -141,11 +156,12 @@ class MainPresenter : MvpPresenter<MainView>() {
                     return
                 }
 
-                toursData.companies = response.body()!!.companies
+                allToursData.companies = response.body()!!.companies
 
+                filterCompanyId = -1
                 viewState.showProgress(false)
                 viewState.showEmptyView(false)
-                viewState.showTours(true, toursData)
+                viewState.showTours(true, allToursData)
             }
         })
     }

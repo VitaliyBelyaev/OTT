@@ -3,7 +3,7 @@
     <string name="one_flight_pattern">%d вараинт перелёта</string>
     <string name="two_four_flight_pattern">%d вараинта перелёта</string>
     <string name="five_more_flight_pattern">%d вараинтов перелёта</string>
-    <string name="tour_price">от %d руб.</string>
+    <string name="tour_price">от %d р.</string>
     <string name="tour_price_flights_dialog">%d р.</string>
     <string name="empty_message">Нечего показывать.\nПотяните вниз, чтобы обновить.</string>
     <string name="fetching_error_message">Ошибка при загрузке данных</string>
