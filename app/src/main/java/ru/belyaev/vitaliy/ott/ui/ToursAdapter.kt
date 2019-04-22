@@ -1,4 +1,4 @@
-package ru.belyaev.vitaliy.ott
+package ru.belyaev.vitaliy.ott.ui
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -6,12 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_tour.view.*
+import ru.belyaev.vitaliy.ott.R
 import ru.belyaev.vitaliy.ott.entity.Hotel
 import ru.belyaev.vitaliy.ott.entity.ToursData
 
 class ToursAdapter(
     private val context: Context,
-    private val onClickListener: (Int) -> Unit
+    private val onClickListener: (hotel: Hotel) -> Unit
 ) : RecyclerView.Adapter<ToursAdapter.TourVH>() {
 
     var toursData: ToursData? = null
@@ -53,10 +54,10 @@ class ToursAdapter(
             val hotelFlights = toursData!!.flights.filter { it.id in hotel.flights }.sortedBy { it.price }
 
             val minimumTotalPrice = hotel.price + hotelFlights[0].price
-            price.text = context.getString(R.string.price, minimumTotalPrice)
+            price.text = context.getString(R.string.tour_price, minimumTotalPrice)
 
             itemView.setOnClickListener {
-                onClickListener.invoke(hotel.id)
+                onClickListener.invoke(hotel)
             }
         }
     }

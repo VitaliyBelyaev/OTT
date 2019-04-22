@@ -8,4 +8,6 @@ data class Flight(
     @SerializedName("departure") val departure: String,
     @SerializedName("id") val id: Int,
     @SerializedName("price") val price: Int
-)
+) {
+    var companyName: String? = null
+}
