@@ -21,7 +21,6 @@ class MainPresenter : MvpPresenter<MainView>() {
     var toursData = ToursData()
     lateinit var context: Context
 
-
     fun onHotelClick(hotelId: Int) {
 
         val hotel = toursData.hotels.find { it.id == hotelId }!!
@@ -53,6 +52,39 @@ class MainPresenter : MvpPresenter<MainView>() {
         viewState.showMessage(message)
     }
 
+    fun onCompanyFilterSelect(companyId: Int) {
+
+        val companyFlights = toursData.flights.filter { it.companyId == companyId }
+        val filteredHotels = toursData.hotels.filter { hotel ->
+            hotel.flights.any { it in companyFlights.map { it.id } }
+        }
+
+        for (hotel in filteredHotels) {
+            hotel.flights = hotel.flights.filter { it in companyFlights.map { flight -> flight.id } }
+        }
+
+        val newToursData = ToursData().apply {
+            hotels = filteredHotels
+            flights = toursData.flights
+            companies = toursData.companies
+        }
+
+        viewState.showFilterDialog(false, null)
+        viewState.showTours(true, newToursData)
+    }
+
+    fun onFilterMenuItemClick() {
+        viewState.showFilterDialog(true, toursData.companies)
+    }
+
+    fun onNothingToFilter() {
+        viewState.showMessage(context.getString(R.string.nothing_to_filter))
+    }
+
+    fun onFilterDialogCancel() {
+        viewState.showFilterDialog(false, null)
+    }
+
     fun onFlightsDialogCancel() {
         viewState.showFlightsDialog(false, null)
     }
@@ -75,7 +107,6 @@ class MainPresenter : MvpPresenter<MainView>() {
 
                 fetchFlights()
             }
-
         })
     }
 

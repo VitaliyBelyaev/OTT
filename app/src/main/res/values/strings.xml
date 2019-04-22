@@ -8,4 +8,7 @@
     <string name="empty_message">Нечего показывать.\nПотяните вниз, чтобы обновить.</string>
     <string name="fetching_error_message">Ошибка при загрузке данных</string>
     <string name="selection_message">Вы выбрали тур в отель %s за %d р.</string>
+    <string name="filter_title">Фильтровать</string>
+    <string name="nothing_to_filter">Нечего фильтровать</string>
+    <string name="all">Все</string>
 </resources>

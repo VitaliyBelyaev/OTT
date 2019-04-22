@@ -11,7 +11,7 @@ import ru.belyaev.vitaliy.ott.entity.Flight
 import ru.belyaev.vitaliy.ott.entity.Order
 
 class FlightAdapter(
-    private val order:Order,
+    private val order: Order,
     private val context: Context,
     private val onClickListener: (hotelId: Int, flightId: Int) -> Unit
 ) : RecyclerView.Adapter<FlightAdapter.FlightVH>() {
@@ -26,7 +26,7 @@ class FlightAdapter(
     }
 
     override fun onBindViewHolder(holder: FlightVH, position: Int) {
-        holder.bind(order!!.flights[position])
+        holder.bind(order.flights[position])
     }
 
     inner class FlightVH(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -36,11 +36,11 @@ class FlightAdapter(
         fun bind(flight: Flight) {
             companyName.text = flight.companyName
 
-            val totalPrice = order!!.hotel.price + flight.price
+            val totalPrice = order.hotel.price + flight.price
             price.text = context.getString(R.string.tour_price_flights_dialog, totalPrice)
 
             itemView.setOnClickListener {
-                onClickListener.invoke(order!!.hotel.id, flight.id)
+                onClickListener.invoke(order.hotel.id, flight.id)
             }
         }
     }

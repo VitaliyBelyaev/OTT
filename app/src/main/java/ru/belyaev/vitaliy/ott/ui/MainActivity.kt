@@ -1,8 +1,11 @@
 package ru.belyaev.vitaliy.ott.ui
 
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -12,11 +15,13 @@ import com.arellomobile.mvp.presenter.InjectPresenter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.dialog_flights.view.*
 import ru.belyaev.vitaliy.ott.R
+import ru.belyaev.vitaliy.ott.entity.Company
 import ru.belyaev.vitaliy.ott.entity.Hotel
 import ru.belyaev.vitaliy.ott.entity.Order
 import ru.belyaev.vitaliy.ott.entity.ToursData
 import ru.belyaev.vitaliy.ott.presentation.MainPresenter
 import ru.belyaev.vitaliy.ott.presentation.MainView
+
 
 class MainActivity : MvpAppCompatActivity(), MainView {
 
@@ -24,12 +29,12 @@ class MainActivity : MvpAppCompatActivity(), MainView {
     lateinit var presenter: MainPresenter
 
     lateinit var toursAdapter: ToursAdapter
-    var flightsDialog: Dialog? = null
+    private var flightsDialog: Dialog? = null
+    private var filterDialog: Dialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         presenter.context = this
 
         val tourClickListener: (hotel: Hotel) -> Unit = {
@@ -42,6 +47,27 @@ class MainActivity : MvpAppCompatActivity(), MainView {
             adapter = toursAdapter
         }
         swipeToRefresh.setOnRefreshListener { presenter.fetchHotels() }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.options_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        if (item == null) return super.onOptionsItemSelected(item)
+
+        when (item.itemId) {
+            R.id.filter -> {
+                if (toursAdapter.toursData == null) {
+                    presenter.onNothingToFilter()
+                    return true
+                }
+                presenter.onFilterMenuItemClick()
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun showProgress(show: Boolean) {
@@ -87,6 +113,25 @@ class MainActivity : MvpAppCompatActivity(), MainView {
             .setOnCancelListener { presenter.onFlightsDialogCancel() }.create()
 
         flightsDialog!!.show()
+    }
+
+    override fun showFilterDialog(show: Boolean, companies: List<Company>?) {
+        if (!show) {
+            filterDialog?.dismiss()
+            return
+        }
+
+        val companyNameList = companies!!.map { it.name }.toTypedArray()
+
+        filterDialog = AlertDialog.Builder(this)
+            .setTitle(getString(R.string.filter_title))
+            .setOnCancelListener { presenter.onFilterDialogCancel() }
+            .setItems(companyNameList) { _: DialogInterface, position: Int ->
+                presenter.onCompanyFilterSelect(companies[position].id)
+            }
+            .create()
+
+        filterDialog!!.show()
     }
 
     override fun showMessage(message: String) {
